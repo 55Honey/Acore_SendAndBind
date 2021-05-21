@@ -21,7 +21,7 @@ Adjust the top part of the .lua file with the config flags.
 
 
 ## GM Usage:
-`.senditemandbind $targetGUID $itemID [$amount]` instead of `.send item` to send soulbound items. $amount defaults to 1 if left out.
+`.senditemandbind $targetGUID $itemID [$amount] [message]` instead of `.send item` to send soulbound items. $amount defaults to 1 if left out.
 
 
 ## Config:
