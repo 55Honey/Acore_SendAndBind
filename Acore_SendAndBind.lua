@@ -48,6 +48,12 @@ local function SendAndBind(event, player, command)
             return "missing argument"
         end
 
+        commandArray[2] = commandArray[2]:gsub("[';\\, ]", "")
+        commandArray[3] = commandArray[3]:gsub("[';\\, ]", "")
+        if commandArray[4] ~= nil then
+            commandArray[4] = commandArray[4]:gsub("[';\\, ]", "")
+        end
+
         targetGUID = commandArray[2]
         item_id = commandArray[3]
 
