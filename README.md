@@ -16,14 +16,14 @@ Adjust the top part of the .lua file with the config flags.
 ## Admin usage:
 - Compile the core with ElunaLua module
 - Adjust the top part of the .lua file with the config flags.
-- Change the '.send mail' in your webshop to '.senditemandbind $targetGUID $itemID [$amount] [message]'
--  add this script to ../lua_scripts/
+- Change the `.send mail` in your webshop to `.senditemandbind $targetGUID $itemID [$amount] [message]`
+- Add this script to ../lua_scripts/
 
 
 ## GM Usage:
-'.senditemandbind $targetGUID $itemID [$amount]' instead of '.send item' to send soulbound items. $amount defaults to 1 if left out.
+`.senditemandbind $targetGUID $itemID [$amount]` instead of `.send item` to send soulbound items. $amount defaults to 1 if left out.
 
 
 ## Config:
-See the lua file for a description of the config flags.#
+See the lua file for a description of the config flags.
 
