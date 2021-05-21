@@ -18,8 +18,8 @@
 
 local Config = {}
 
-Config.subject = "Subject"
-Config.message = "MailBody"
+Config.subject = "Shop Item"
+Config.message = ""
 Config.minGMRankForSend = 2
 
 local storedTargetGuid = {}
@@ -35,6 +35,7 @@ local function SendAndBind(event, player, command)
     local item_amount
     local targetGUID
     local SAB_eventId
+    local mailText
     local commandArray = SAB_splitString(command)
     if commandArray[1] == "senditemandbind" then
         -- make sure the player is properly ranked
@@ -63,18 +64,33 @@ local function SendAndBind(event, player, command)
             item_amount = commandArray[4]
         end
 
-        itemGUID = SendMail(Config.subject, Config.message, targetGUID, 0, 61, 0, 0, 0, item_id, item_amount)
+        if commandArray[5] ~= nil then
+            local counter
+            for index,value in ipairs(commandArray) do
+                if index >= 5 then
+                    if mailText == nil then
+                        mailText = commandArray[index].." "
+                    else
+                        mailText = mailText..commandArray[index].." "
+                    end
+                end
+            end
+        else
+            mailText = ""
+        end
+
+        itemGUID = SendMail(Config.subject, Config.message..mailText, targetGUID, 0, 61, 15, 0, 0, item_id, item_amount) --15 seconds delay to wait for the async db query
         print("itemGUID: "..itemGUID)
 
-        SAB_eventId = CreateLuaEvent(SAB_resumeSubRoutine, 3000, 1)
+        SAB_eventId = CreateLuaEvent(SAB_resumeSubRoutine, 5000, 1)
         print("SAB_eventId: "..SAB_eventId)
         storedTargetGuid[SAB_eventId] = targetGUID
         storedItemGuid[SAB_eventId] = itemGUID
 
         SAB_subRoutine[SAB_eventId] = coroutine.create(function (targetGUID, itemGUID)
             print("itemGUID2: "..itemGUID)
-            CharDBExecute('UPDATE `item_instance` SET `flags` = 1 WHERE `guid` = '..itemGUID..' AND `flags` = 0;')
-            CharDBExecute('UPDATE `item_instance` SET `owner_guid` = '..targetGUID..' WHERE `guid` = '..itemGUID..' AND `flags` = 1;')
+            CharDBExecute('UPDATE `item_instance` SET `flags` = 1 WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 0;')
+            CharDBExecute('UPDATE `item_instance` SET `owner_guid` = '..tonumber(targetGUID)..' WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 1;')
             return false
          end)
     end
