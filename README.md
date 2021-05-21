@@ -16,7 +16,7 @@ Adjust the top part of the .lua file with the config flags.
 ## Admin usage:
 - Compile the core with ElunaLua module
 - Adjust the top part of the .lua file with the config flags.
-- Change the '.send mail' in your webshop to '.senditemandbind $targetGUID $itemID [$amount]'
+- Change the `.send mail` in your webshop to `.senditemandbind $targetGUID $itemID [$amount]`
 -  add this script to ../lua_scripts/
 
 
