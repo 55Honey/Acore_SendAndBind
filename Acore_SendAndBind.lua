@@ -80,19 +80,16 @@ local function SendAndBind(event, player, command)
         end
 
         itemGUID = SendMail(Config.subject, Config.message..mailText, targetGUID, 0, 61, 15, 0, 0, item_id, item_amount) --15 seconds delay to wait for the async db query
-        print("itemGUID: "..itemGUID)
 
         SAB_eventId = CreateLuaEvent(SAB_resumeSubRoutine, 5000, 1)
-        print("SAB_eventId: "..SAB_eventId)
         storedTargetGuid[SAB_eventId] = targetGUID
         storedItemGuid[SAB_eventId] = itemGUID
 
         SAB_subRoutine[SAB_eventId] = coroutine.create(function (targetGUID, itemGUID)
-            print("itemGUID2: "..itemGUID)
             CharDBExecute('UPDATE `item_instance` SET `flags` = 1 WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 0;')
             CharDBExecute('UPDATE `item_instance` SET `owner_guid` = '..tonumber(targetGUID)..' WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 1;')
-            return false
          end)
+        return false
     end
 end
 
@@ -112,7 +109,6 @@ function SAB_splitString(inputstr, seperator)
 end
 
 function SAB_resumeSubRoutine(eventId, delay, repeats)
-    print("resume")
     coroutine.resume(SAB_subRoutine[eventId],storedTargetGuid[eventId],storedItemGuid[eventId])
     storedTargetGuid[eventId] = nil
     storedItemGuid[eventId] = nil
