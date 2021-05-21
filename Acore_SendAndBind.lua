@@ -91,8 +91,8 @@ local function SendAndBind(event, player, command)
             print("itemGUID2: "..itemGUID)
             CharDBExecute('UPDATE `item_instance` SET `flags` = 1 WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 0;')
             CharDBExecute('UPDATE `item_instance` SET `owner_guid` = '..tonumber(targetGUID)..' WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 1;')
-            return false
          end)
+        return false
     end
 end
 
