@@ -1,6 +1,7 @@
 ## SendItemAndBind
 Lua script for Azerothcore with ElunaLua to send soulbound items to players, which are usually Bind on Equip.
 
+**Proudly hosted on [ChromieCraft](https://www.chromiecraft.com/)**
 
 #### Find me on patreon: https://www.patreon.com/Honeys
 
