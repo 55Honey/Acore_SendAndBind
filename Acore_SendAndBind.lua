@@ -87,7 +87,7 @@ local function SendAndBind(event, player, command)
 
         SAB_subRoutine[SAB_eventId] = coroutine.create(function (targetGUID, itemGUID)
             CharDBExecute('UPDATE `item_instance` SET `flags` = 1 WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 0;')
-            CharDBExecute('UPDATE `item_instance` SET `owner_guid` = '..tonumber(targetGUID)..' WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 1;')
+            CharDBExecute('UPDATE `item_instance` SET `owner_guid` = '..tonumber(targetGUID)..' WHERE `guid` = '..tonumber(itemGUID)..';')
          end)
         return false
     end
