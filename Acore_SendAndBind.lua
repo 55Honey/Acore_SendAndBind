@@ -79,9 +79,9 @@ local function SendAndBind(event, player, command)
             mailText = ""
         end
 
-        itemGUID = SendMail(Config.subject, Config.message..mailText, targetGUID, 0, 61, 15, 0, 0, item_id, item_amount) --15 seconds delay to wait for the async db query
+        itemGUID = SendMail(Config.subject, Config.message..mailText, targetGUID, 0, 61, 60, 0, 0, item_id, item_amount) --60 seconds delay to wait for the async db query
 
-        SAB_eventId = CreateLuaEvent(SAB_resumeSubRoutine, 5000, 1)
+        SAB_eventId = CreateLuaEvent(SAB_resumeSubRoutine, 30000, 1)
         storedTargetGuid[SAB_eventId] = targetGUID
         storedItemGuid[SAB_eventId] = itemGUID
 
