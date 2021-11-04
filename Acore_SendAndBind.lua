@@ -22,9 +22,6 @@ Config.subject = "Shop Item"
 Config.message = ""
 Config.minGMRankForSend = 2
 
-local storedTargetGuid = {}
-local storedItemGuid = {}
-local SAB_subRoutine = {}
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
 ------------------------------------------
@@ -79,22 +76,30 @@ local function SendAndBind(event, player, command)
             mailText = ""
         end
 
-        itemGUID = SendMail(Config.subject, Config.message..mailText, targetGUID, 0, 61, 60, 0, 0, item_id, item_amount) --60 seconds delay to wait for the async db query
-
-        SAB_eventId = CreateLuaEvent(SAB_resumeSubRoutine, 30000, 1)
-        storedTargetGuid[SAB_eventId] = targetGUID
-        storedItemGuid[SAB_eventId] = itemGUID
-
-        SAB_subRoutine[SAB_eventId] = coroutine.create(function (targetGUID, itemGUID)
+        itemGUID = SendMail(Config.subject, Config.message..mailText, targetGUID, 0, 61, 15, 0, 0, item_id, item_amount)
+        local player = GetPlayerByGUID(targetGUID)
+        if player == nil then
+            -- Player is offline
             CharDBExecute('UPDATE `item_instance` SET `flags` = 1 WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 0;')
             CharDBExecute('UPDATE `item_instance` SET `owner_guid` = '..tonumber(targetGUID)..' WHERE `guid` = '..tonumber(itemGUID)..';')
-         end)
+        else
+            -- Player is online
+            local item = player:GetMailItem(itemGUID)
+            if item == nil then
+                print("[SendAndBind] Player:GetMailItem returned nil item reference")
+                return false
+            end
+
+            item:SetOwner(player)
+            item:SetBinding(true)
+        end
+
         return false
     end
 end
 
 
-PLAYER_EVENT_ON_COMMAND = 42            --(event, player, command)
+local PLAYER_EVENT_ON_COMMAND = 42            --(event, player, command)
 RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, SendAndBind)
 
 function SAB_splitString(inputstr, seperator)
@@ -106,10 +111,4 @@ function SAB_splitString(inputstr, seperator)
         table.insert(t, str)
     end
     return t
-end
-
-function SAB_resumeSubRoutine(eventId, delay, repeats)
-    coroutine.resume(SAB_subRoutine[eventId],storedTargetGuid[eventId],storedItemGuid[eventId])
-    storedTargetGuid[eventId] = nil
-    storedItemGuid[eventId] = nil
 end
