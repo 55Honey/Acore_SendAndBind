@@ -26,6 +26,21 @@ Config.minGMRankForSend = 2
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
 ------------------------------------------
 
+local function log(line, logToConsole)
+    local f = io.open(debug.getinfo(1).source:match("@?(.*/)") .. "/send-and-bind.log", "a")
+    f:write(line)
+    f:write("\n")
+    f:close()
+
+    if logToConsole == nil or logToConsole == true then
+        print("[SendAndBind] " .. line)
+    end
+end
+
+local function onError(err)
+    log("Error: " .. err)
+end
+
 local function SendAndBind(event, player, command)
     local itemGUID
     local item_id
@@ -76,22 +91,45 @@ local function SendAndBind(event, player, command)
             mailText = ""
         end
 
-        itemGUID = SendMail(Config.subject, Config.message..mailText, targetGUID, 0, 61, 15, 0, 0, item_id, item_amount)
+        log("", false)
+        log("[====" ..  os.date("%m-%d-%Y %I:%M %p") .. "====]")
+        log("targetGUID = " .. tonumber(targetGUID))
+        log("item_id = " .. tonumber(item_id))
+        log("item_amount = " .. item_amount)
+
+        local success
+        success, itemGUID = xpcall(SendMail, onError, Config.subject, Config.message..mailText, targetGUID, 0, 61, 15, 0, 0, item_id, item_amount)
+        if not success then
+            return false
+        end
+        log("Sent mail, itemGUID = " .. tonumber(itemGUID))
+
         local player = GetPlayerByGUID(targetGUID)
         if player == nil then
             -- Player is offline
-            CharDBExecute('UPDATE `item_instance` SET `flags` = 1 WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 0;')
-            CharDBExecute('UPDATE `item_instance` SET `owner_guid` = '..tonumber(targetGUID)..' WHERE `guid` = '..tonumber(itemGUID)..';')
+            log("Player with GUID " .. targetGUID .. " is offline.")
+
+            local sql = 'UPDATE `item_instance` SET `flags` = 1 WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 0;'
+            log(sql)
+            CharDBExecute(sql)
+
+            sql = 'UPDATE `item_instance` SET `owner_guid` = '..tonumber(targetGUID)..' WHERE `guid` = '..tonumber(itemGUID)..';'
+            log(sql)
+            CharDBExecute(sql)
+
+            log("Executed UPDATE queries.")
         else
             -- Player is online
+            log("Player " .. player:GetName() .. " is online.")
             local item = player:GetMailItem(itemGUID)
             if item == nil then
-                print("[SendAndBind] Player:GetMailItem returned nil item reference")
+                onError("Player:GetMailItem returned nil item reference.")
                 return false
             end
 
             item:SetOwner(player)
             item:SetBinding(true)
+            log("Executed SetOwner and SetBinding.")
         end
 
         return false
