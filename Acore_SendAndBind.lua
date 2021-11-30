@@ -109,7 +109,7 @@ local function SendAndBind(event, player, command)
             -- Player is offline
             log("Player with GUID " .. targetGUID .. " is offline.")
 
-            local sql = 'UPDATE `item_instance` SET `flags` = 1 WHERE `guid` = '..tonumber(itemGUID)..' AND `flags` = 0;'
+            local sql = 'UPDATE `item_instance` SET `flags` = `flags` | 1 WHERE `guid` = '..tonumber(itemGUID)..';'
             log(sql)
             CharDBExecute(sql)
 
