@@ -48,7 +48,13 @@ local function SendAndBind(event, player, command)
     local targetGUID
     local SAB_eventId
     local mailText
+
     local commandArray = SAB_splitString(command)
+
+    if commandArray[1] ~= "senditemandbind" then
+        return
+    end
+
     if commandArray[1] == "senditemandbind" then
         -- make sure the player is properly ranked
         if player ~= nil then
