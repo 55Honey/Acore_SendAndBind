@@ -102,6 +102,11 @@ local function SendAndBind(event, player, command)
         log("targetGUID = " .. tonumber(targetGUID))
         log("item_id = " .. tonumber(item_id))
         log("item_amount = " .. item_amount)
+        if player ~= nil then
+            log("executed by: "..player:GetName())
+        else
+            log("executed from: console")
+        end
 
         local success
         success, itemGUID = xpcall(SendMail, onError, Config.subject, Config.message..mailText, targetGUID, 0, 61, 15, 0, 0, item_id, item_amount)
@@ -110,8 +115,8 @@ local function SendAndBind(event, player, command)
         end
         log("Sent mail, itemGUID = " .. tonumber(itemGUID))
 
-        local player = GetPlayerByGUID(targetGUID)
-        if player == nil then
+        local recipient = GetPlayerByGUID(targetGUID)
+        if recipient == nil then
             -- Player is offline
             log("Player with GUID " .. targetGUID .. " is offline.")
 
@@ -126,14 +131,14 @@ local function SendAndBind(event, player, command)
             log("Executed UPDATE queries.")
         else
             -- Player is online
-            log("Player " .. player:GetName() .. " is online.")
-            local item = player:GetMailItem(itemGUID)
+            log("Player " .. recipient:GetName() .. " is online.")
+            local item = recipient:GetMailItem(itemGUID)
             if item == nil then
                 onError("Player:GetMailItem returned nil item reference.")
                 return false
             end
 
-            item:SetOwner(player)
+            item:SetOwner(recipient)
             item:SetBinding(true)
             log("Executed SetOwner and SetBinding.")
         end
