@@ -61,10 +61,8 @@ local function SendAndBind(event, player, command, chatHandler)
 
     if commandArray[1] == "senditemandbind" then
         -- make sure the player is properly ranked
-        if player ~= nil then
-            if player:GetGMRank() < Config.minGMRankForSend then
-                return
-            end
+        if not chatHandler:IsAvailable(Config.minGMRankForSend) then
+            return
         end
 
         if commandArray[2] == nil or commandArray[3] == nil then
@@ -102,15 +100,16 @@ local function SendAndBind(event, player, command, chatHandler)
         end
 
         log("", chatHandler, false)
-        log("[====" ..  os.date("%m-%d-%Y %I:%M %p") .. "====]", chatHandler)
+        log("[====" ..  os.date("%m-%d-%Y %I:%M %p") .. "====]", chatHandler, false)
         log("targetGUID = " .. tonumber(targetGUID), chatHandler)
         log("item_id = " .. tonumber(item_id), chatHandler)
         log("item_amount = " .. item_amount, chatHandler)
-        if player ~= nil then
-            log("executed by: "..player:GetName())
+        if player == nil then
+            log("executed by: console", chatHandler)
         else
-            log("executed from: console")
+            log("executed by: "..player:GetName(), chatHandler)
         end
+
 
         local success
         success, itemGUID = xpcall(SendMail,
