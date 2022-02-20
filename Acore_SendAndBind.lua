@@ -26,22 +26,26 @@ Config.minGMRankForSend = 2
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
 ------------------------------------------
 
-local function log(line, logToConsole)
+local function log(line, chatHandler, logToConsole)
     local f = io.open(debug.getinfo(1).source:match("@?(.*/)") .. "/send-and-bind.log", "a")
     f:write(line)
     f:write("\n")
     f:close()
 
     if logToConsole == nil or logToConsole == true then
-        print("[SendAndBind] " .. line)
+        if chatHandler ~= nil then
+            chatHandler:SendSysMessage("[SendAndBind] " .. line)
+        else
+            print("[SendAndBind] " .. line)
+        end
     end
 end
 
-local function onError(err)
-    log("Error: " .. err)
+local function onError(err, chatHandler)
+    log("Error: " .. err, chatHandler)
 end
 
-local function SendAndBind(event, player, command)
+local function SendAndBind(event, player, command, chatHandler)
     local itemGUID
     local item_id
     local item_amount
@@ -57,10 +61,8 @@ local function SendAndBind(event, player, command)
 
     if commandArray[1] == "senditemandbind" then
         -- make sure the player is properly ranked
-        if player ~= nil then
-            if player:GetGMRank() < Config.minGMRankForSend then
-                return
-            end
+        if not chatHandler:IsAvailable(Config.minGMRankForSend) then
+            return
         end
 
         if commandArray[2] == nil or commandArray[3] == nil then
@@ -97,41 +99,46 @@ local function SendAndBind(event, player, command)
             mailText = ""
         end
 
-        log("", false)
-        log("[====" ..  os.date("%m-%d-%Y %I:%M %p") .. "====]")
-        log("targetGUID = " .. tonumber(targetGUID))
-        log("item_id = " .. tonumber(item_id))
-        log("item_amount = " .. item_amount)
-        if player ~= nil then
-            log("executed by: "..player:GetName())
+        log("", chatHandler, false)
+        log("[====" ..  os.date("%m-%d-%Y %I:%M %p") .. "====]", chatHandler, false)
+        log("targetGUID = " .. tonumber(targetGUID), chatHandler)
+        log("item_id = " .. tonumber(item_id), chatHandler)
+        log("item_amount = " .. item_amount, chatHandler)
+        if player == nil then
+            log("executed by: console", chatHandler)
         else
-            log("executed from: console")
+            log("executed by: "..player:GetName(), chatHandler)
         end
 
+
         local success
-        success, itemGUID = xpcall(SendMail, onError, Config.subject, Config.message..mailText, targetGUID, 0, 61, 15, 0, 0, item_id, item_amount)
+        success, itemGUID = xpcall(SendMail,
+            function(err)
+                onError(err, chatHandler)
+            end,
+            Config.subject, Config.message..mailText, targetGUID, 0, 61, 15, 0, 0, item_id, item_amount)
         if not success then
             return false
         end
-        log("Sent mail, itemGUID = " .. tonumber(itemGUID))
+        log("Sent mail, itemGUID = " .. tonumber(itemGUID), chatHandler)
 
         local recipient = GetPlayerByGUID(targetGUID)
         if recipient == nil then
             -- Player is offline
-            log("Player with GUID " .. targetGUID .. " is offline.")
+            log("Player with GUID " .. targetGUID .. " is offline.", chatHandler)
 
             local sql = 'UPDATE `item_instance` SET `flags` = `flags` | 1 WHERE `guid` = '..tonumber(itemGUID)..';'
-            log(sql)
+            log(sql, chatHandler)
             CharDBExecute(sql)
 
             sql = 'UPDATE `item_instance` SET `owner_guid` = '..tonumber(targetGUID)..' WHERE `guid` = '..tonumber(itemGUID)..';'
-            log(sql)
+            log(sql, chatHandler)
             CharDBExecute(sql)
 
-            log("Executed UPDATE queries.")
+            log("Executed UPDATE queries.", chatHandler)
         else
             -- Player is online
-            log("Player " .. recipient:GetName() .. " is online.")
+            log("Player " .. recipient:GetName() .. " is online.", chatHandler)
             local item = recipient:GetMailItem(itemGUID)
             if item == nil then
                 onError("Player:GetMailItem returned nil item reference.")
@@ -140,7 +147,7 @@ local function SendAndBind(event, player, command)
 
             item:SetOwner(recipient)
             item:SetBinding(true)
-            log("Executed SetOwner and SetBinding.")
+            log("Executed SetOwner and SetBinding.", chatHandler)
         end
 
         return false
