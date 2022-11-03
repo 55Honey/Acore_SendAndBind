@@ -65,8 +65,9 @@ local function SendAndBind(event, player, command, chatHandler)
             return
         end
 
-        if commandArray[2] == nil or commandArray[3] == nil then
-            return "missing argument"
+        if commandArray[2] == nil or commandArray[3] == nil or commandArray[2] == "help" then
+            chatHandler:SendSysMessage("Expected Syntax: .senditemandbind $playerGuid $itemEntry $amount $mailText")
+            return false
         end
 
         commandArray[2] = commandArray[2]:gsub("[';\\, ]", "")
